@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { FormEvent, useMemo, useState, useTransition } from "react";
 import { format } from "date-fns";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,8 @@ export function HomeOpenTasks({
   companies: Option[];
   meId: string | null;
 }) {
+  const router = useRouter();
+  const [, startTransition] = useTransition();
   const [tasks, setTasks] = useState(initialTasks);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
@@ -56,6 +59,7 @@ export function HomeOpenTasks({
       if (!response.ok) return;
       const updated = (await response.json()) as OpenTask;
       setTasks((prev) => prev.map((task) => (task.id === taskId ? updated : task)));
+      startTransition(() => router.refresh());
     } finally {
       setLoadingId(null);
     }
@@ -97,6 +101,7 @@ export function HomeOpenTasks({
     setCompanyId("");
     setDueDate("");
     setShowCreate(false);
+    startTransition(() => router.refresh());
   };
 
   return (

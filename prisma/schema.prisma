@@ -151,6 +151,27 @@ model DemoRun {
   createdAt   DateTime @default(now())
 }
 
+model DemoPrompt {
+  id        String   @id @default(cuid())
+  demoSlug  String
+  name      String
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([demoSlug, name])
+  @@index([demoSlug])
+}
+
+model DemoPromptState {
+  id               String   @id @default(cuid())
+  demoSlug         String   @unique
+  systemPrompt     String
+  selectedPromptId String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
 model Order {
   id            String      @id @default(cuid())
   companyId     String?

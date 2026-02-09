@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, KeyboardEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, KeyboardEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Demo, DemoRun, Material } from "@prisma/client";
 import { Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -33,31 +33,13 @@ type SavedPrompt = {
   text: string;
 };
 
+type PromptPayload = {
+  systemPrompt: string;
+  selectedPromptId: string;
+  prompts: SavedPrompt[];
+};
+
 const DEFAULT_SYSTEM_PROMPT = "You are a helpful assistant.";
-
-function parseSavedPrompts(raw: string | null): SavedPrompt[] {
-  if (!raw) return [];
-
-  try {
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-
-    return parsed
-      .filter(
-        (entry): entry is SavedPrompt =>
-          typeof entry?.id === "string" &&
-          typeof entry?.name === "string" &&
-          typeof entry?.text === "string",
-      )
-      .map((entry) => ({
-        id: entry.id,
-        name: entry.name,
-        text: entry.text,
-      }));
-  } catch {
-    return [];
-  }
-}
 
 export function DemoRunner({ demo, materials, recentRuns }: RunnerProps) {
   const [rawText, setRawText] = useState("");
@@ -81,46 +63,70 @@ export function DemoRunner({ demo, materials, recentRuns }: RunnerProps) {
   const [promptName, setPromptName] = useState("");
   const [savedPrompts, setSavedPrompts] = useState<SavedPrompt[]>([]);
   const [selectedPromptId, setSelectedPromptId] = useState("");
+  const [promptsLoaded, setPromptsLoaded] = useState(false);
+  const [promptBusy, setPromptBusy] = useState(false);
   const [promptStatus, setPromptStatus] = useState<string | null>(null);
 
   const isChatbotDemo = demo.slug === "chatbot";
-  const promptStorageKey = useMemo(() => `demo-prompt-${demo.slug}`, [demo.slug]);
-  const promptLibraryStorageKey = useMemo(() => `demo-prompt-library-${demo.slug}`, [demo.slug]);
-  const selectedPromptStorageKey = useMemo(() => `demo-prompt-selection-${demo.slug}`, [demo.slug]);
   const title = useMemo(() => demo.title.replace(/^Demo\s[^:]+:\s*/i, ""), [demo.title]);
 
+  const loadPromptPayload = useCallback(async () => {
+    const response = await fetch(`/api/demos/${demo.slug}/prompts`, { method: "GET" });
+    if (!response.ok) throw new Error("Could not load prompts");
+    return (await response.json()) as PromptPayload;
+  }, [demo.slug]);
+
+  const savePromptState = useCallback(async (payload: { systemPrompt?: string; selectedPromptId?: string | null }) => {
+    const response = await fetch(`/api/demos/${demo.slug}/prompts`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) throw new Error("Could not save prompt state");
+    return (await response.json()) as PromptPayload;
+  }, [demo.slug]);
+
+  const applyPromptPayload = useCallback((payload: PromptPayload) => {
+    setSavedPrompts(payload.prompts);
+    setSelectedPromptId(payload.selectedPromptId);
+    setSystemPrompt(payload.systemPrompt || DEFAULT_SYSTEM_PROMPT);
+    const selectedPrompt = payload.prompts.find((entry) => entry.id === payload.selectedPromptId);
+    setPromptName(selectedPrompt?.name ?? "");
+  }, []);
+
   useEffect(() => {
     if (!isChatbotDemo) return;
+    let cancelled = false;
 
-    const storedPrompt = window.localStorage.getItem(promptStorageKey);
-    const storedLibrary = parseSavedPrompts(window.localStorage.getItem(promptLibraryStorageKey));
-    const storedSelection = window.localStorage.getItem(selectedPromptStorageKey) ?? "";
+    loadPromptPayload()
+      .then((payload) => {
+        if (cancelled) return;
+        applyPromptPayload(payload);
+        setPromptsLoaded(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setPromptStatus("Could not load saved prompts.");
+        setPromptsLoaded(true);
+      });
 
-    setSavedPrompts(storedLibrary);
-    setSelectedPromptId(storedSelection);
-
-    if (storedPrompt?.trim()) {
-      setSystemPrompt(storedPrompt);
-    } else {
-      setSystemPrompt(DEFAULT_SYSTEM_PROMPT);
-    }
-
-    const selectedPrompt = storedLibrary.find((entry) => entry.id === storedSelection);
-    if (selectedPrompt) {
-      setPromptName(selectedPrompt.name);
-    }
-  }, [isChatbotDemo, promptStorageKey, promptLibraryStorageKey, selectedPromptStorageKey]);
+    return () => {
+      cancelled = true;
+    };
+  }, [applyPromptPayload, isChatbotDemo, loadPromptPayload]);
 
   useEffect(() => {
-    if (!isChatbotDemo) return;
+    if (!isChatbotDemo || !promptsLoaded) return;
 
     const handle = window.setTimeout(() => {
-      window.localStorage.setItem(promptStorageKey, systemPrompt);
-      setPromptStatus("Prompt auto-saved.");
+      savePromptState({ systemPrompt })
+        .then(() => setPromptStatus("Prompt auto-saved."))
+        .catch(() => setPromptStatus("Could not save prompt."));
     }, 250);
 
     return () => window.clearTimeout(handle);
-  }, [isChatbotDemo, promptStorageKey, systemPrompt]);
+  }, [isChatbotDemo, promptsLoaded, savePromptState, systemPrompt]);
 
   const run = async (payload: Record<string, unknown>) => {
     setBusy(true);
@@ -186,7 +192,7 @@ export function DemoRunner({ demo, materials, recentRuns }: RunnerProps) {
     setMessage(`Uploaded ${parsed.fileName}.`);
   };
 
-  const saveNamedPrompt = () => {
+  const saveNamedPrompt = async () => {
     if (!isChatbotDemo) return;
 
     const normalizedName = promptName.trim();
@@ -195,67 +201,81 @@ export function DemoRunner({ demo, materials, recentRuns }: RunnerProps) {
       return;
     }
 
-    const existing = savedPrompts.find((entry) => entry.name.toLowerCase() === normalizedName.toLowerCase());
-    let nextPrompts: SavedPrompt[];
-    let nextSelectedId = "";
+    setPromptBusy(true);
+    try {
+      const response = await fetch(`/api/demos/${demo.slug}/prompts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: normalizedName,
+          text: systemPrompt,
+          select: true,
+        }),
+      });
 
-    if (existing) {
-      nextSelectedId = existing.id;
-      nextPrompts = savedPrompts.map((entry) =>
-        entry.id === existing.id
-          ? {
-              ...entry,
-              name: normalizedName,
-              text: systemPrompt,
-            }
-          : entry,
-      );
-      setPromptStatus(`Updated "${normalizedName}".`);
-    } else {
-      const created: SavedPrompt = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        name: normalizedName,
-        text: systemPrompt,
-      };
-      nextSelectedId = created.id;
-      nextPrompts = [created, ...savedPrompts];
+      if (!response.ok) {
+        setPromptStatus("Could not save prompt.");
+        return;
+      }
+
+      const payload = (await response.json()) as PromptPayload;
+      applyPromptPayload(payload);
       setPromptStatus(`Saved "${normalizedName}".`);
+    } catch {
+      setPromptStatus("Could not save prompt.");
+    } finally {
+      setPromptBusy(false);
     }
-
-    setSavedPrompts(nextPrompts);
-    setSelectedPromptId(nextSelectedId);
-    window.localStorage.setItem(promptLibraryStorageKey, JSON.stringify(nextPrompts));
-    window.localStorage.setItem(selectedPromptStorageKey, nextSelectedId);
   };
 
-  const selectNamedPrompt = (id: string) => {
+  const selectNamedPrompt = async (id: string) => {
     setSelectedPromptId(id);
-
-    if (!id) {
-      window.localStorage.removeItem(selectedPromptStorageKey);
-      return;
+    const selected = savedPrompts.find((entry) => entry.id === id);
+    if (selected) {
+      setSystemPrompt(selected.text);
+      setPromptName(selected.name);
+    } else {
+      setPromptName("");
     }
 
-    const selected = savedPrompts.find((entry) => entry.id === id);
-    if (!selected) return;
-
-    setSystemPrompt(selected.text);
-    setPromptName(selected.name);
-    window.localStorage.setItem(selectedPromptStorageKey, id);
-    setPromptStatus(`Loaded "${selected.name}".`);
+    try {
+      const payload = await savePromptState({
+        selectedPromptId: id || null,
+        systemPrompt: selected?.text ?? systemPrompt,
+      });
+      applyPromptPayload(payload);
+      if (selected) {
+        setPromptStatus(`Loaded "${selected.name}".`);
+      } else {
+        setPromptStatus("Selection cleared.");
+      }
+    } catch {
+      setPromptStatus("Could not update prompt selection.");
+    }
   };
 
-  const deleteSelectedPrompt = () => {
+  const deleteSelectedPrompt = async () => {
     if (!selectedPromptId) return;
 
     const selected = savedPrompts.find((entry) => entry.id === selectedPromptId);
-    const nextPrompts = savedPrompts.filter((entry) => entry.id !== selectedPromptId);
+    setPromptBusy(true);
+    try {
+      const response = await fetch(`/api/demos/${demo.slug}/prompts/${selectedPromptId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        setPromptStatus("Could not delete prompt.");
+        return;
+      }
 
-    setSavedPrompts(nextPrompts);
-    setSelectedPromptId("");
-    window.localStorage.setItem(promptLibraryStorageKey, JSON.stringify(nextPrompts));
-    window.localStorage.removeItem(selectedPromptStorageKey);
-    setPromptStatus(selected ? `Deleted "${selected.name}".` : "Deleted prompt.");
+      const payload = await loadPromptPayload();
+      applyPromptPayload(payload);
+      setPromptStatus(selected ? `Deleted "${selected.name}".` : "Deleted prompt.");
+    } catch {
+      setPromptStatus("Could not delete prompt.");
+    } finally {
+      setPromptBusy(false);
+    }
   };
 
   const sendChatMessage = () => {
@@ -330,6 +350,7 @@ export function DemoRunner({ demo, materials, recentRuns }: RunnerProps) {
                 onChange={(event) => setSystemPrompt(event.target.value)}
                 placeholder="Set the assistant behavior"
                 className="min-h-44"
+                disabled={promptBusy}
               />
               <p className="text-xs text-zinc-500">Auto-saves as you type. Press Enter to send. Use Shift+Enter for a new line.</p>
 
@@ -337,8 +358,8 @@ export function DemoRunner({ demo, materials, recentRuns }: RunnerProps) {
                 <p className="text-xs uppercase tracking-wider text-zinc-500">Named Prompts</p>
                 <div className="flex flex-col gap-2 md:flex-row">
                   <Input value={promptName} onChange={(event) => setPromptName(event.target.value)} placeholder="Prompt name" />
-                  <Button onClick={saveNamedPrompt} variant="outline" className="md:w-48">
-                    Save Named Prompt
+                  <Button onClick={saveNamedPrompt} variant="outline" className="md:w-48" disabled={promptBusy || !systemPrompt.trim()}>
+                    {promptBusy ? "Saving..." : "Save Named Prompt"}
                   </Button>
                 </div>
 
@@ -346,6 +367,7 @@ export function DemoRunner({ demo, materials, recentRuns }: RunnerProps) {
                   <select
                     value={selectedPromptId}
                     onChange={(event) => selectNamedPrompt(event.target.value)}
+                    disabled={promptBusy}
                     className="h-10 rounded-md border border-zinc-700 bg-zinc-950 px-3 text-sm text-zinc-200 md:flex-1"
                   >
                     <option value="">Select saved prompt</option>
@@ -355,8 +377,8 @@ export function DemoRunner({ demo, materials, recentRuns }: RunnerProps) {
                       </option>
                     ))}
                   </select>
-                  <Button onClick={deleteSelectedPrompt} variant="outline" className="md:w-32" disabled={!selectedPromptId}>
-                    Delete
+                  <Button onClick={deleteSelectedPrompt} variant="outline" className="md:w-32" disabled={!selectedPromptId || promptBusy}>
+                    {promptBusy ? "Deleting..." : "Delete"}
                   </Button>
                 </div>
               </div>

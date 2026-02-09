@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
@@ -39,8 +40,11 @@ type NextResponsePayload = {
 };
 
 export function HomeNextAi() {
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [assigningKey, setAssigningKey] = useState<string | null>(null);
+  const [assigningAll, setAssigningAll] = useState(false);
+  const [, startTransition] = useTransition();
   const [assignMessage, setAssignMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<NextResponsePayload | null>(null);
@@ -53,12 +57,46 @@ export function HomeNextAi() {
 
   const actionKey = (action: NextAction, index: number) => `${index}-${action.title}-${action.relatedType ?? "none"}-${action.relatedId ?? "none"}`;
 
+  const normalizeName = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
   const pickDefaultAssignee = (payload: NextResponsePayload, ownerName: string | null) => {
     if (!payload.assignableUsers.length) return "";
     if (!ownerName) return payload.assignableUsers[0].id;
 
-    const matched = payload.assignableUsers.find((user) => user.name.toLowerCase() === ownerName.toLowerCase());
-    return matched?.id ?? payload.assignableUsers[0].id;
+    const ownerNormalized = normalizeName(ownerName);
+    if (!ownerNormalized) return payload.assignableUsers[0].id;
+
+    const exact = payload.assignableUsers.find((user) => normalizeName(user.name) === ownerNormalized);
+    if (exact) return exact.id;
+
+    const ownerTokens = ownerNormalized.split(" ").filter(Boolean);
+    const tokenMatch = payload.assignableUsers.find((user) => {
+      const userTokens = normalizeName(user.name).split(" ").filter(Boolean);
+      return ownerTokens.some((token) => userTokens.includes(token));
+    });
+
+    return tokenMatch?.id ?? payload.assignableUsers[0].id;
+  };
+
+  const assignTask = async (action: NextAction, assigneeId: string) => {
+    const payload = {
+      title: action.title,
+      description: action.why,
+      notes: "",
+      dueDate: action.dueDate ?? null,
+      priority: "MEDIUM",
+      assigneeId,
+      companyId: action.relatedType === "company" ? action.relatedId : null,
+      projectId: action.relatedType === "project" ? action.relatedId : null,
+    };
+
+    const response = await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    return response.ok;
   };
 
   const onWhatNext = async () => {
@@ -105,33 +143,49 @@ export function HomeNextAi() {
     setAssignMessage(null);
 
     try {
-      const payload = {
-        title: action.title,
-        description: action.why,
-        notes: "",
-        dueDate: action.dueDate ?? null,
-        priority: "MEDIUM",
-        assigneeId,
-        companyId: action.relatedType === "company" ? action.relatedId : null,
-        projectId: action.relatedType === "project" ? action.relatedId : null,
-      };
-
-      const response = await fetch("/api/tasks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
+      const ok = await assignTask(action, assigneeId);
+      if (!ok) {
         setAssignMessage("Could not assign task.");
         return;
       }
 
       setAssignMessage(`Assigned: ${action.title}`);
+      startTransition(() => router.refresh());
     } catch {
       setAssignMessage("Could not assign task.");
     } finally {
       setAssigningKey(null);
+    }
+  };
+
+  const assignAllActions = async () => {
+    if (!result?.nextActions.length || !result.assignableUsers.length) return;
+
+    setAssigningAll(true);
+    setAssignMessage(null);
+    let createdCount = 0;
+
+    try {
+      for (let index = 0; index < result.nextActions.length; index += 1) {
+        const action = result.nextActions[index];
+        const key = actionKey(action, index);
+        const assigneeId = assigneeByActionKey[key] ?? result.assignableUsers[0]?.id ?? "";
+        if (!assigneeId) continue;
+
+        const ok = await assignTask(action, assigneeId);
+        if (ok) createdCount += 1;
+      }
+
+      if (createdCount > 0) {
+        setAssignMessage(`Assigned ${createdCount} task${createdCount === 1 ? "" : "s"}.`);
+        startTransition(() => router.refresh());
+      } else {
+        setAssignMessage("Could not assign tasks.");
+      }
+    } catch {
+      setAssignMessage("Could not assign tasks.");
+    } finally {
+      setAssigningAll(false);
     }
   };
 
@@ -145,6 +199,11 @@ export function HomeNextAi() {
       <Button onClick={onWhatNext} disabled={busy} className="w-full">
         {busy ? "Thinking..." : "What next?"}
       </Button>
+      {result?.nextActions.length ? (
+        <Button onClick={assignAllActions} disabled={assigningAll || !result.assignableUsers.length} variant="outline" className="w-full">
+          {assigningAll ? "Assigning all..." : "Assign all actions as tasks"}
+        </Button>
+      ) : null}
 
       {error ? <p className="text-xs text-rose-300">{error}</p> : null}
       {assignMessage ? <p className="text-xs text-emerald-300">{assignMessage}</p> : null}
