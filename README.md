@@ -31,6 +31,7 @@ npm run dev
 3. Create a hosted PostgreSQL database (Vercel Postgres, Neon, Supabase, Railway, etc).
 4. In Vercel Project Settings -> Environment Variables, set:
    - `DATABASE_URL` (production Postgres URL)
+   - `DIRECT_URL` (non-pooled Postgres URL for Prisma schema operations)
    - `OPENAI_API_KEY`
    - `OPENAI_MODEL` (optional, default is `gpt-5.2`)
    - `OPENAI_BASE_URL` (optional)
@@ -45,4 +46,4 @@ npx prisma db push
 npx prisma db seed
 ```
 
-Use the same production `DATABASE_URL` when running the commands above.
+Use production DB env vars when running the commands above.
