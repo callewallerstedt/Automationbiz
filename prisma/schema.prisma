@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PipelineStage {
+  COMPANY_FOUND
+  DRAFT_RESEARCH
+  WAITING_REPLY
+  ON_HOOK
+  IN_PROGRESS
+  WON
+  LOST
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ON_HOLD
+  COMPLETE
+}
+
+enum DemoStatus {
+  IDEA
+  PROTOTYPE
+  READY
+}
+
+enum OrderStatus {
+  DRAFT
+  ACCEPTED
+}
+
+model User {
+  id             String        @id @default(cuid())
+  name           String
+  email          String        @unique
+  companies      Company[]
+  assignedTasks  Task[]
+  interactions   Interaction[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Company {
+  id             String         @id @default(cuid())
+  name           String
+  industry       String
+  location       String
+  stage          PipelineStage  @default(COMPANY_FOUND)
+  painPoints     String
+  website        String?
+  nextActionDate DateTime?
+  ownerId        String
+  owner          User           @relation(fields: [ownerId], references: [id])
+  interactions   Interaction[]
+  projects       Project[]
+  tasks          Task[]
+  orders         Order[]
+  links          CompanyLink[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model CompanyLink {
+  id          String   @id @default(cuid())
+  companyId   String
+  label       String
+  url         String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model Interaction {
+  id           String   @id @default(cuid())
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  type         String
+  summary      String
+  occurredAt   DateTime
+  createdById  String
+  createdBy    User     @relation(fields: [createdById], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  companyId   String
+  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name        String
+  description String
+  status      ProjectStatus @default(ACTIVE)
+  deadline    DateTime
+  tasks       Task[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  notes       String?
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime?
+  assigneeId  String
+  assignee    User         @relation(fields: [assigneeId], references: [id])
+  companyId   String?
+  company     Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  projectId   String?
+  project     Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Demo {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  title       String
+  description String
+  status      DemoStatus
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model DemoRun {
+  id          String   @id @default(cuid())
+  demoSlug    String
+  inputRaw    String
+  outputJson  Json
+  accepted    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  companyId     String?
+  company       Company?    @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  sourceType    String
+  customerName  String?
+  orderNumber   String?
+  requestedDate DateTime?
+  items         Json
+  totalAmount   Float?
+  confidence    Json
+  status        OrderStatus @default(DRAFT)
+  createdAt     DateTime    @default(now())
+}
+
+model Material {
+  id            String   @id @default(cuid())
+  name          String
+  sku           String   @unique
+  stockQty      Float
+  minStock      Float
+  reorderBatch  Float
+  leadTimeDays  Int
+  supplier      String
+  unit          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model InventoryUpdate {
+  id          String   @id @default(cuid())
+  sourceDoc   String
+  supplier    String?
+  items       Json
+  applied     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model JobCostCheck {
+  id                String   @id @default(cuid())
+  jobName           String
+  estimatedMaterial Float
+  actualMaterial    Float
+  estimatedHours    Float
+  actualHours       Float
+  materialCost      Float
+  laborRate         Float
+  marginPct         Float
+  abnormalUsage     Boolean
+  createdAt         DateTime @default(now())
+}
+
