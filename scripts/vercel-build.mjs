@@ -2,6 +2,7 @@ import { execSync } from "node:child_process";
 
 function pickDatabaseUrl() {
   const candidateKeys = [
+    "POSTGRES_PRISMA_URL",
     "POSTGRES_URL_NON_POOLING",
     "DATABASE_URL_UNPOOLED",
     "DIRECT_URL",
