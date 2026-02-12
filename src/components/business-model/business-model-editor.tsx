@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Bot, Clock3 } from "lucide-react";
+import { Bot, Clock3, Copy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import type { BusinessModelFields } from "@/lib/business-model";
@@ -136,6 +137,18 @@ export function BusinessModelEditor({ initialProfile }: { initialProfile: Busine
 
   const updatedAtLabel = new Date(profile.updatedAt).toLocaleString();
 
+  const handleCopyAll = async () => {
+    const content = SECTION_CONFIG
+      .map((section) => `${section.title}:\n${fields[section.field] || ""}`)
+      .join("\n\n");
+
+    try {
+      await navigator.clipboard.writeText(content);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+  };
+
   return (
     <div className="space-y-5">
       <Card>
@@ -146,15 +159,26 @@ export function BusinessModelEditor({ initialProfile }: { initialProfile: Busine
               Separate strategic context that your AI assistants can always read.
             </CardDescription>
           </div>
-          <div className="space-y-2 text-right">
-            <Badge className="bg-white/14 text-zinc-100">
-              <Clock3 className="mr-1 h-3.5 w-3.5" />
-              {saveLabel}
-            </Badge>
-            <p className="text-xs text-zinc-500">
-              Updated: {updatedAtLabel}
-              {profile.updatedBy ? ` by ${profile.updatedBy.name}` : ""}
-            </p>
+          <div className="flex flex-col items-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyAll}
+              className="bg-white/10 border-white/20 text-zinc-100 hover:bg-white/20"
+            >
+              <Copy className="mr-2 h-4 w-4" />
+              Copy All
+            </Button>
+            <div className="space-y-2 text-right">
+              <Badge className="bg-white/14 text-zinc-100">
+                <Clock3 className="mr-1 h-3.5 w-3.5" />
+                {saveLabel}
+              </Badge>
+              <p className="text-xs text-zinc-500">
+                Updated: {updatedAtLabel}
+                {profile.updatedBy ? ` by ${profile.updatedBy.name}` : ""}
+              </p>
+            </div>
           </div>
         </div>
       </Card>
