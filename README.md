@@ -10,9 +10,8 @@ Next.js app with Prisma + PostgreSQL.
 cp .env.example .env
 ```
 
-2. Set PostgreSQL URLs in `.env`:
-   - `DATABASE_URL` (pooled or standard runtime URL)
-   - `DIRECT_URL` (direct/non-pooled URL for Prisma migrate commands)
+2. Set PostgreSQL URL in `.env`:
+   - `DATABASE_URL` (runtime URL)
 3. Apply schema and seed:
 
 ```bash
@@ -33,7 +32,7 @@ npm run dev
 3. Create a hosted PostgreSQL database (Vercel Postgres, Neon, Supabase, Railway, etc).
 4. In Vercel Project Settings -> Environment Variables, set:
    - `DATABASE_URL` (production Postgres URL)
-   - `DIRECT_URL` (non-pooled Postgres URL for Prisma schema operations)
+   - `DIRECT_URL` (optional, non-pooled URL if you later wire Prisma direct migrations)
    - `OPENAI_API_KEY`
    - `OPENAI_MODEL` (optional, default is `gpt-5.2`)
    - `OPENAI_BASE_URL` (optional)
