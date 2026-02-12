@@ -46,6 +46,7 @@ npm run dev
      `Storage_DATABASE_URL_UNPOOLED`, `STORAGE_DATABASE_URL_UNPOOLED`, `Storage_DATABASE_URL`,
      `STORAGE_DATABASE_URL`, `POSTGRES_PRISMA_URL`, `POSTGRES_URL_NON_POOLING`,
      `DATABASE_URL_UNPOOLED`, `DIRECT_URL`, `POSTGRES_URL`, `DATABASE_URL`.
+   - If Prisma returns `P3005` (existing non-empty schema), build script auto-baselines current migrations once.
 6. (Optional) Seed production data once:
 
 ```bash

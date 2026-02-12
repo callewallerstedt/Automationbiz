@@ -1,4 +1,5 @@
-import { execSync } from "node:child_process";
+import { execSync, spawnSync } from "node:child_process";
+import { readdirSync } from "node:fs";
 
 function clean(value) {
   if (!value) return undefined;
@@ -56,6 +57,44 @@ function pickDatabaseUrl() {
 const databaseUrl = pickDatabaseUrl();
 process.env.DATABASE_URL = databaseUrl;
 
+function run(command) {
+  execSync(command, { stdio: "inherit", env: process.env });
+}
+
+function tryMigrateDeployWithOutput() {
+  const result = spawnSync("npx", ["prisma", "migrate", "deploy"], {
+    env: process.env,
+    encoding: "utf8",
+  });
+
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+
+  return result;
+}
+
+function baselineExistingDatabase() {
+  const migrationDirs = readdirSync("prisma/migrations", { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+
+  for (const migration of migrationDirs) {
+    run(`npx prisma migrate resolve --applied ${migration}`);
+  }
+}
+
 execSync("npx prisma generate", { stdio: "inherit", env: process.env });
-execSync("npx prisma migrate deploy", { stdio: "inherit", env: process.env });
-execSync("npx next build", { stdio: "inherit", env: process.env });
+
+const deployResult = tryMigrateDeployWithOutput();
+if (deployResult.status !== 0) {
+  const output = `${deployResult.stdout ?? ""}\n${deployResult.stderr ?? ""}`;
+  if (/P3005|database schema is not empty/i.test(output)) {
+    baselineExistingDatabase();
+    run("npx prisma migrate deploy");
+  } else {
+    process.exit(deployResult.status ?? 1);
+  }
+}
+
+run("npx next build");
