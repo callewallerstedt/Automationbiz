@@ -1,26 +1,35 @@
 import { execSync } from "node:child_process";
 
 function pickDatabaseUrl() {
-  const candidates = [
-    process.env.POSTGRES_URL_NON_POOLING,
-    process.env.POSTGRES_URL,
-    process.env.DATABASE_URL,
-  ].filter(Boolean);
+  const candidateKeys = [
+    "POSTGRES_URL_NON_POOLING",
+    "DATABASE_URL_UNPOOLED",
+    "DIRECT_URL",
+    "POSTGRES_URL",
+    "DATABASE_URL",
+    "NEON_DATABASE_URL",
+    "NEON_POSTGRES_URL",
+  ];
+
+  const candidates = candidateKeys
+    .map((key) => ({ key, value: process.env[key]?.trim() }))
+    .filter((entry) => Boolean(entry.value));
 
   if (!candidates.length) {
     throw new Error(
-      "Missing database URL. Set DATABASE_URL or provision Vercel Postgres (POSTGRES_URL / POSTGRES_URL_NON_POOLING).",
+      "Missing database URL. Set a Postgres URL in one of: POSTGRES_URL_NON_POOLING, DATABASE_URL_UNPOOLED, DIRECT_URL, POSTGRES_URL, DATABASE_URL.",
     );
   }
 
-  const value = candidates[0];
-  if (!/^postgres(ql)?:\/\//i.test(value)) {
+  const match = candidates.find((entry) => /^postgres(ql)?:\/\//i.test(entry.value));
+  if (!match) {
+    const seen = candidates.map((entry) => `${entry.key}=${entry.value.split(":")[0] ?? "unknown"}://`).join(", ");
     throw new Error(
-      `Invalid database URL protocol: ${value.split(":")[0] ?? "unknown"}. Expected postgres:// or postgresql://`,
+      `No valid Postgres URL found. Expected postgres:// or postgresql://. Found: ${seen}`,
     );
   }
 
-  return value;
+  return match.value;
 }
 
 const databaseUrl = pickDatabaseUrl();

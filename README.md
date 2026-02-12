@@ -42,7 +42,8 @@ npm run dev
    - `NEXT_PUBLIC_APP_URL` (your Vercel production URL)
 5. Deploy once from Vercel.
    - `vercel.json` uses `npm run vercel-build`, which runs `prisma migrate deploy` during build.
-   - Build script automatically prefers `POSTGRES_URL_NON_POOLING`, then `POSTGRES_URL`, then `DATABASE_URL`.
+   - Build script picks the first valid Postgres URL from:
+     `POSTGRES_URL_NON_POOLING`, `DATABASE_URL_UNPOOLED`, `DIRECT_URL`, `POSTGRES_URL`, `DATABASE_URL`.
 6. (Optional) Seed production data once:
 
 ```bash
