@@ -10,7 +10,9 @@ Next.js app with Prisma + PostgreSQL.
 cp .env.example .env
 ```
 
-2. Set a PostgreSQL `DATABASE_URL` in `.env`.
+2. Set PostgreSQL URLs in `.env`:
+   - `DATABASE_URL` (pooled or standard runtime URL)
+   - `DIRECT_URL` (direct/non-pooled URL for Prisma migrate commands)
 3. Apply schema and seed:
 
 ```bash
@@ -39,11 +41,11 @@ npm run dev
    - `OPENAI_PROJECT` (optional)
    - `NEXT_PUBLIC_APP_URL` (your Vercel production URL)
 5. Deploy once from Vercel.
-6. Initialize database schema and seed data against production DB:
+   - `vercel.json` uses `npm run vercel-build`, which runs `prisma migrate deploy` during build.
+6. (Optional) Seed production data once:
 
 ```bash
-npx prisma db push
-npx prisma db seed
+npm run db:seed
 ```
 
-Use production DB env vars when running the commands above.
+Run seed with production DB env vars.

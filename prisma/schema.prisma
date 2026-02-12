@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -56,6 +56,8 @@ model User {
   companies      Company[]
   assignedTasks  Task[]
   interactions   Interaction[]
+  businessModelUpdates   BusinessModelProfile[]
+  businessModelRevisions BusinessModelRevision[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 }
@@ -224,3 +226,32 @@ model JobCostCheck {
   createdAt         DateTime @default(now())
 }
 
+model BusinessModelProfile {
+  id               String                 @id @default(cuid())
+  key              String                 @unique @default("default")
+  valueProposition String                 @default("")
+  idealCustomer    String                 @default("")
+  offerings        String                 @default("")
+  pricingModel     String                 @default("")
+  salesProcess     String                 @default("")
+  constraints      String                 @default("")
+  toneGuidelines   String                 @default("")
+  aiSummary        String                 @default("")
+  updatedById      String?
+  updatedBy        User?                  @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+  revisions        BusinessModelRevision[]
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+}
+
+model BusinessModelRevision {
+  id          String               @id @default(cuid())
+  profileId   String
+  profile     BusinessModelProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  snapshot    Json
+  changedById String?
+  changedBy   User?                @relation(fields: [changedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime             @default(now())
+
+  @@index([profileId, createdAt])
+}

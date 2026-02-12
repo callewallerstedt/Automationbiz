@@ -113,14 +113,14 @@ export function HomeOpenTasks({
             <Plus className="mr-1 h-3.5 w-3.5" />
             Add Task
           </Button>
-          <Link href="/tasks" className="text-xs text-sky-300 hover:text-sky-200">
+          <Link href="/tasks" className="text-xs text-zinc-300 hover:text-zinc-200">
             Go to tasks
           </Link>
         </div>
       </div>
 
       {showCreate ? (
-        <form onSubmit={createTask} className="mb-3 grid gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 p-3 md:grid-cols-5">
+        <form onSubmit={createTask} className="mb-3 grid gap-2 frost-pane rounded-xl p-3 md:grid-cols-5">
           <Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Task title" className="md:col-span-2" />
           <Input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Description" />
           <Select value={assigneeId} onChange={(event) => setAssigneeId(event.target.value)}>
@@ -149,9 +149,9 @@ export function HomeOpenTasks({
         {tasks.map((task) => {
           const assigneeName = usersById[task.assigneeId]?.name ?? task.assignee.name;
           return (
-            <div key={task.id} className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 px-3 py-2">
+            <div key={task.id} className="flex items-center justify-between gap-3 rounded-xl frost-pane-soft px-3 py-2">
               <div>
-                <Link href={`/tasks/${task.id}`} className="text-sm font-medium text-zinc-100 hover:text-sky-300">
+                <Link href={`/tasks/${task.id}`} className="text-sm font-medium text-zinc-100 hover:text-zinc-200">
                   {task.title}
                 </Link>
                 <p className="text-xs text-zinc-500">

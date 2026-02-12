@@ -48,7 +48,7 @@ export function GlobalSearch() {
       />
 
       {query && hasResults ? (
-        <div className="absolute z-20 mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950/95 p-3 shadow-xl backdrop-blur">
+        <div className="frost-pane absolute z-20 mt-2 w-full rounded-2xl p-3 shadow-xl">
           {results.companies.length ? (
             <div className="mb-2">
               <p className="mb-1 text-xs uppercase tracking-wider text-zinc-500">Companies</p>
@@ -56,7 +56,7 @@ export function GlobalSearch() {
                 <Link
                   key={company.id}
                   href={`/companies/${company.id}`}
-                  className="block rounded-lg px-2 py-1.5 text-sm text-zinc-200 transition hover:bg-zinc-900"
+                  className="block rounded-lg px-2 py-1.5 text-sm text-zinc-200 transition hover:bg-white/10"
                 >
                   {company.name}
                 </Link>
@@ -68,7 +68,7 @@ export function GlobalSearch() {
             <div className="mb-2">
               <p className="mb-1 text-xs uppercase tracking-wider text-zinc-500">Tasks</p>
               {results.tasks.map((task) => (
-                <Link key={task.id} href="/tasks" className="block rounded-lg px-2 py-1.5 text-sm text-zinc-200 transition hover:bg-zinc-900">
+                <Link key={task.id} href="/tasks" className="block rounded-lg px-2 py-1.5 text-sm text-zinc-200 transition hover:bg-white/10">
                   {task.title}
                 </Link>
               ))}
@@ -82,7 +82,7 @@ export function GlobalSearch() {
                 <Link
                   key={project.id}
                   href="/home"
-                  className="block rounded-lg px-2 py-1.5 text-sm text-zinc-200 transition hover:bg-zinc-900"
+                  className="block rounded-lg px-2 py-1.5 text-sm text-zinc-200 transition hover:bg-white/10"
                 >
                   {project.name}
                 </Link>

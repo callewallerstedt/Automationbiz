@@ -9,6 +9,7 @@ const entries = [
   { label: "Go to Home", href: "/home" },
   { label: "Open Pipeline", href: "/pipeline" },
   { label: "Open Tasks", href: "/tasks" },
+  { label: "Open Business Model", href: "/business-model" },
   { label: "Open Demo Lab", href: "/demo-lab" },
   { label: "Create Lead", href: "/pipeline" },
   { label: "Add Task", href: "/tasks" },
@@ -43,7 +44,7 @@ export function CommandPalette() {
 
       {open ? (
         <div className="fixed inset-0 z-50 bg-black/60 p-4 backdrop-blur-sm" onClick={() => setOpen(false)}>
-          <div className="mx-auto mt-20 max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-4" onClick={(event) => event.stopPropagation()}>
+          <div className="frost-pane mx-auto mt-20 max-w-lg rounded-2xl p-4" onClick={(event) => event.stopPropagation()}>
             <p className="mb-3 text-xs uppercase tracking-wider text-zinc-500">Command Palette</p>
             <div className="space-y-1">
               {entries.map((entry) => (
@@ -53,7 +54,7 @@ export function CommandPalette() {
                     setOpen(false);
                     router.push(entry.href);
                   }}
-                  className="w-full rounded-xl px-3 py-2 text-left text-sm text-zinc-200 transition hover:bg-zinc-900"
+                  className="w-full rounded-xl px-3 py-2 text-left text-sm text-zinc-200 transition hover:bg-white/10"
                 >
                   {entry.label}
                 </button>

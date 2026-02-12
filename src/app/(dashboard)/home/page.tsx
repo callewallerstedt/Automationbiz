@@ -17,13 +17,13 @@ export default async function HomePage() {
         <Card>
           <div className="mb-4 flex items-center justify-between">
             <CardTitle>To-do Focus</CardTitle>
-            <Link href="/tasks" className="text-xs text-sky-300 hover:text-sky-200">
+            <Link href="/tasks" className="text-xs text-zinc-300 hover:text-zinc-200">
               Open tasks
             </Link>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {data.todoByOwner.map((entry) => (
-              <div key={entry.user.id} className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-3">
+              <div key={entry.user.id} className="frost-pane rounded-xl p-3">
                 <p className="mb-2 text-sm font-semibold text-zinc-100">{entry.user.name}</p>
                 {entry.tasks.length ? (
                   <div className="space-y-2">
@@ -31,7 +31,7 @@ export default async function HomePage() {
                       <Link
                         key={task.id}
                         href={`/tasks/${task.id}`}
-                        className="block rounded-lg bg-zinc-950/70 px-2 py-1.5 text-xs text-zinc-300 transition hover:bg-zinc-900"
+                        className="frost-pane-soft block rounded-lg px-2 py-1.5 text-xs text-zinc-300 transition hover:bg-white/16"
                       >
                         <p className="font-medium text-zinc-200">{task.title}</p>
                         <p className="text-zinc-500">
@@ -53,8 +53,8 @@ export default async function HomePage() {
             <p className="text-xs uppercase tracking-wider text-zinc-500">To-do Summary</p>
             <p className="mt-2 text-3xl font-semibold text-zinc-100">{data.totalTodoCount}</p>
             <p className="text-xs text-zinc-400">Open to-do tasks</p>
-            <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-3">
-              <p className="text-sm font-semibold text-rose-300">{data.overdueTodoCount}</p>
+            <div className="mt-4 frost-pane-strong rounded-xl p-3">
+              <p className="text-sm font-semibold text-zinc-100">{data.overdueTodoCount}</p>
               <p className="text-xs text-zinc-500">Overdue to-do items</p>
             </div>
           </Card>
@@ -102,7 +102,7 @@ export default async function HomePage() {
                 <Link
                   key={company.id}
                   href={`/companies/${company.id}`}
-                  className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-200 hover:bg-zinc-800"
+                  className="flex items-center justify-between frost-pane-soft rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-white/16"
                 >
                   <span>{company.name}</span>
                   <span className="text-xs text-zinc-500">{company.owner.name}</span>
@@ -121,7 +121,7 @@ export default async function HomePage() {
           </div>
           <div className="space-y-3">
             {data.activeProjects.map((project) => (
-              <div key={project.id} className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-3">
+              <div key={project.id} className="frost-pane rounded-xl p-3">
                 <p className="text-sm font-semibold text-zinc-100">{project.name}</p>
                 <p className="text-xs text-zinc-400">{project.company.name}</p>
                 <p className="mt-1 text-xs text-zinc-500">Deadline: {format(project.deadline, "yyyy-MM-dd")}</p>
@@ -138,10 +138,10 @@ export default async function HomePage() {
             <CardTitle>Fast Access</CardTitle>
           </div>
           <div className="grid gap-3 md:grid-cols-2">
-            <Link href="/pipeline" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-3 text-sm text-zinc-200 hover:bg-zinc-800">
+            <Link href="/pipeline" className="frost-pane-strong rounded-xl p-3 text-sm text-zinc-200 hover:bg-white/20">
               Company Kanban <ArrowRight className="ml-2 inline h-4 w-4" />
             </Link>
-            <Link href="/demo-lab" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-3 text-sm text-zinc-200 hover:bg-zinc-800">
+            <Link href="/demo-lab" className="frost-pane-strong rounded-xl p-3 text-sm text-zinc-200 hover:bg-white/20">
               Demo Lab <ArrowRight className="ml-2 inline h-4 w-4" />
             </Link>
             <CardDescription className="md:col-span-2">Use command palette with Ctrl+K to jump and create records faster.</CardDescription>

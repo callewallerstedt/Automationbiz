@@ -42,10 +42,10 @@ type CompanyItem = {
 function ModalShell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/60 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="mx-auto mt-20 max-w-xl rounded-2xl border border-zinc-800 bg-zinc-950 p-4" onClick={(event) => event.stopPropagation()}>
+      <div className="frost-pane mx-auto mt-20 max-w-xl rounded-2xl p-4" onClick={(event) => event.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-zinc-100">{title}</h3>
-          <button type="button" className="rounded-lg p-1 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100" onClick={onClose}>
+          <button type="button" className="rounded-lg p-1 text-zinc-400 hover:bg-white/10 hover:text-zinc-100" onClick={onClose}>
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -70,8 +70,8 @@ function StageColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "min-h-96 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-3 transition duration-200",
-        isOver && "border-sky-400/60 bg-sky-500/10",
+        "frost-pane min-h-96 rounded-2xl p-3 transition duration-200",
+        isOver && "bg-white/16",
       )}
     >
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -98,16 +98,16 @@ function CompanyMenu({
     <details className="group relative">
       <summary
         onPointerDown={(event) => event.stopPropagation()}
-        className="flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+        className="flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded-lg text-zinc-400 hover:bg-white/10 hover:text-zinc-100"
       >
         <MoreHorizontal className="h-4 w-4" />
       </summary>
-      <div className="absolute right-0 top-9 z-30 w-40 rounded-xl border border-zinc-800 bg-zinc-950 p-1.5 shadow-xl">
+      <div className="frost-pane absolute right-0 top-9 z-30 w-40 rounded-xl p-1.5 shadow-xl">
         <button
           type="button"
           onPointerDown={(event) => event.stopPropagation()}
           onClick={() => onRename(company)}
-          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-zinc-200 hover:bg-zinc-900"
+          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-zinc-200 hover:bg-white/10"
         >
           <Pencil className="h-3.5 w-3.5" />
           Rename
@@ -116,7 +116,7 @@ function CompanyMenu({
           type="button"
           onPointerDown={(event) => event.stopPropagation()}
           onClick={() => onEdit(company)}
-          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-zinc-200 hover:bg-zinc-900"
+          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-zinc-200 hover:bg-white/10"
         >
           <Pencil className="h-3.5 w-3.5" />
           Edit
@@ -125,7 +125,7 @@ function CompanyMenu({
           type="button"
           onPointerDown={(event) => event.stopPropagation()}
           onClick={() => onDelete(company)}
-          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-rose-300 hover:bg-zinc-900"
+          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-zinc-200 hover:bg-white/10"
         >
           <Trash2 className="h-3.5 w-3.5" />
           Delete
@@ -168,7 +168,7 @@ function CompanyCard({
         <CompanyMenu company={company} onRename={onRename} onEdit={onEdit} onDelete={onDelete} />
       </div>
 
-      <Link href={`/companies/${company.id}`} className="mb-2 block text-sm font-semibold text-zinc-100 hover:text-sky-300">
+      <Link href={`/companies/${company.id}`} className="mb-2 block text-sm font-semibold text-zinc-100 hover:text-white">
         {company.name}
       </Link>
       <p className="text-xs text-zinc-400">{company.industry}</p>

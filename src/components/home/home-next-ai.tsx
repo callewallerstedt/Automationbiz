@@ -193,7 +193,7 @@ export function HomeNextAi() {
     <Card className="min-w-0 space-y-3 p-4">
       <div className="flex items-center justify-between gap-3">
         <CardTitle>AI Next Step</CardTitle>
-        <Sparkles className="h-4 w-4 text-sky-300" />
+        <Sparkles className="h-4 w-4 text-zinc-300" />
       </div>
 
       <Button onClick={onWhatNext} disabled={busy} className="w-full">
@@ -205,17 +205,17 @@ export function HomeNextAi() {
         </Button>
       ) : null}
 
-      {error ? <p className="text-xs text-rose-300">{error}</p> : null}
-      {assignMessage ? <p className="text-xs text-emerald-300">{assignMessage}</p> : null}
+      {error ? <p className="text-xs text-zinc-300">{error}</p> : null}
+      {assignMessage ? <p className="text-xs text-zinc-200">{assignMessage}</p> : null}
 
       {result ? (
-        <div className="max-h-[30rem] space-y-3 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
+        <div className="frost-pane max-h-[30rem] space-y-3 overflow-y-auto rounded-xl p-3">
           <p className="break-words text-sm font-medium text-zinc-100">{result.headline}</p>
 
           <div className="space-y-2">
             {result.nextActions.length ? (
               result.nextActions.map((action, index) => (
-                <div key={`${action.title}-${index}`} className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-2">
+                <div key={`${action.title}-${index}`} className="frost-pane-soft rounded-lg p-2">
                   <p className="break-words text-sm font-semibold text-zinc-100">{action.title}</p>
                   <p className="break-words text-xs text-zinc-400">{action.why}</p>
                   <p className="mt-1 text-[11px] text-zinc-500">
@@ -259,7 +259,7 @@ export function HomeNextAi() {
               <p className="mb-1 text-xs uppercase tracking-wide text-zinc-500">Watch Outs</p>
               <div className="space-y-1">
                 {result.risks.map((risk, index) => (
-                  <p key={`${risk}-${index}`} className="text-xs text-amber-200">
+                  <p key={`${risk}-${index}`} className="text-xs text-zinc-300">
                     - {risk}
                   </p>
                 ))}

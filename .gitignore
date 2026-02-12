@@ -48,4 +48,5 @@ next-env.d.ts
 
 # local sqlite and temp data
 /prisma/*.db
+/prisma/prisma/*.db
 /.data/

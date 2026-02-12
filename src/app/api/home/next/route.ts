@@ -1,6 +1,7 @@
 import { addDays, endOfDay } from "date-fns";
 import { PipelineStage, TaskStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { getBusinessModelPromptContext } from "@/lib/business-model";
 import { openAiModel, openai } from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 
@@ -33,16 +34,6 @@ type NextPayload = {
   workload: WorkloadItem[];
   risks: string[];
 };
-
-const BUSINESS_CONTEXT = `
-You sell AI + automation discovery and implementation.
-How you work:
-1) You reach out to companies and propose an efficiency/productivity investigation.
-2) You ask to shadow them for roughly one day.
-3) You interview team members and observe workflows.
-4) You deliver findings and offer implementation of the chosen improvements.
-Your suggestions must support this exact flow.
-`.trim();
 
 function toDateLabel(value: Date | null) {
   if (!value) return null;
@@ -259,6 +250,7 @@ function buildFallback(input: {
 }
 
 export async function POST() {
+  const businessModelContext = await getBusinessModelPromptContext();
   const [users, tasks, companies, projects] = await Promise.all([
     prisma.user.findMany({ orderBy: { name: "asc" } }),
     prisma.task.findMany({
@@ -340,7 +332,7 @@ export async function POST() {
 
   const context = {
     generatedAt: new Date().toISOString(),
-    businessModel: BUSINESS_CONTEXT,
+    businessModel: businessModelContext,
     users: users.map((user) => ({ id: user.id, name: user.name, email: user.email })),
     tasks: tasks.map((task) => ({
       id: task.id,
@@ -431,7 +423,7 @@ export async function POST() {
           content: [
             {
               type: "input_text",
-              text: `Business context:\n${BUSINESS_CONTEXT}\n\nWorkspace context:\n${JSON.stringify(context)}\n\nPrioritization rules:\n1) Overdue tasks first\n2) Blocked tasks second\n3) Follow-ups due/overdue third\n4) Then discovery pipeline growth (research companies, outreach drafts, shadow-day prep, demo prep)\n\nReturn valid JSON only.`,
+              text: `Business context:\n${businessModelContext}\n\nWorkspace context:\n${JSON.stringify(context)}\n\nPrioritization rules:\n1) Overdue tasks first\n2) Blocked tasks second\n3) Follow-ups due/overdue third\n4) Then discovery pipeline growth (research companies, outreach drafts, shadow-day prep, demo prep)\n\nReturn valid JSON only.`,
             },
           ],
         },

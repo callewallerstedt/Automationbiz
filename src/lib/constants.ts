@@ -13,20 +13,20 @@ export const PIPELINE_STAGES: PipelineStage[] = [
 export const TASK_STATUSES: TaskStatus[] = ["TODO", "IN_PROGRESS", "BLOCKED", "DONE"];
 
 export const PRIORITY_COLORS: Record<TaskPriority, string> = {
-  LOW: "bg-emerald-500/15 text-emerald-300",
-  MEDIUM: "bg-sky-500/15 text-sky-300",
-  HIGH: "bg-amber-500/15 text-amber-300",
-  URGENT: "bg-rose-500/15 text-rose-300",
+  LOW: "bg-white/10 text-zinc-200",
+  MEDIUM: "bg-white/14 text-zinc-100",
+  HIGH: "bg-white/18 text-zinc-100",
+  URGENT: "bg-white/24 text-white",
 };
 
 export const STAGE_COLORS: Record<PipelineStage, string> = {
-  COMPANY_FOUND: "bg-zinc-500/20 text-zinc-200",
-  DRAFT_RESEARCH: "bg-indigo-500/20 text-indigo-200",
-  WAITING_REPLY: "bg-sky-500/20 text-sky-200",
-  ON_HOOK: "bg-violet-500/20 text-violet-200",
-  IN_PROGRESS: "bg-amber-500/20 text-amber-200",
-  WON: "bg-emerald-500/20 text-emerald-200",
-  LOST: "bg-rose-500/20 text-rose-200",
+  COMPANY_FOUND: "bg-white/10 text-zinc-200",
+  DRAFT_RESEARCH: "bg-white/12 text-zinc-200",
+  WAITING_REPLY: "bg-white/14 text-zinc-100",
+  ON_HOOK: "bg-white/16 text-zinc-100",
+  IN_PROGRESS: "bg-white/18 text-zinc-100",
+  WON: "bg-white/20 text-white",
+  LOST: "bg-white/22 text-white",
 };
 
 export const STAGE_LABELS: Record<PipelineStage, string> = {
@@ -47,9 +47,9 @@ export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
 };
 
 export const DEMO_STATUS_COLORS: Record<DemoStatus, string> = {
-  IDEA: "bg-zinc-500/20 text-zinc-200",
-  PROTOTYPE: "bg-amber-500/20 text-amber-200",
-  READY: "bg-emerald-500/20 text-emerald-200",
+  IDEA: "bg-white/10 text-zinc-200",
+  PROTOTYPE: "bg-white/16 text-zinc-100",
+  READY: "bg-white/22 text-white",
 };
 
 export const DEMO_SLUG_ORDER = [

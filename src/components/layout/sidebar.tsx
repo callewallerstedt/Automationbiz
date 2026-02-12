@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BriefcaseBusiness, Building2, ClipboardCheck, FlaskConical, House, KanbanSquare } from "lucide-react";
+import { BriefcaseBusiness, Building2, ClipboardCheck, FlaskConical, House, KanbanSquare, ScrollText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/home", label: "Home", icon: House },
   { href: "/pipeline", label: "Pipeline", icon: KanbanSquare },
   { href: "/tasks", label: "Tasks", icon: ClipboardCheck },
+  { href: "/business-model", label: "Business Model", icon: ScrollText },
   { href: "/demo-lab", label: "Demo Lab", icon: FlaskConical },
 ];
 
@@ -16,9 +17,9 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-zinc-800 bg-zinc-950/70 p-5 md:block">
+    <aside className="frost-pane sticky top-0 hidden h-screen w-64 shrink-0 p-5 md:block">
       <div className="mb-8 flex items-center gap-3">
-        <div className="rounded-xl bg-gradient-to-br from-sky-500 to-cyan-400 p-2 text-zinc-950">
+        <div className="frost-pane-strong rounded-xl p-2 text-zinc-100">
           <BriefcaseBusiness className="h-5 w-5" />
         </div>
         <div>
@@ -37,7 +38,7 @@ export function Sidebar() {
               href={link.href}
               className={cn(
                 "flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition duration-200",
-                active ? "bg-zinc-800 text-zinc-100" : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100",
+                active ? "frost-pane-strong text-zinc-100" : "text-zinc-400 hover:bg-white/10 hover:text-zinc-100",
               )}
             >
               <Icon className="h-4 w-4" />
@@ -47,7 +48,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+      <div className="frost-pane-soft mt-8 rounded-2xl p-4">
         <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
           <Building2 className="h-3.5 w-3.5" />
           Focus today

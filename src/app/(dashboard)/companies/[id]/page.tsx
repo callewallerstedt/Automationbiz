@@ -107,7 +107,7 @@ export default async function CompanyDetailPage({ params }: CompanyPageProps) {
                   href={link.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="block rounded-xl border border-zinc-800 bg-zinc-900/50 p-3 text-sm text-sky-300 hover:bg-zinc-800"
+                  className="block frost-pane rounded-xl p-3 text-sm text-zinc-300 hover:bg-white/16"
                 >
                   {link.label}
                 </a>

@@ -19,13 +19,13 @@ export default async function DemoLabPage() {
       <div className="grid gap-4 md:grid-cols-2">
         {ordered.map((demo) => (
           <Link key={demo.id} href={`/demo-lab/${demo.slug}`}>
-            <Card className="h-full p-5 hover:border-sky-400/40">
+            <Card className="h-full p-5 hover:border-zinc-600/40">
               <div className="mb-3 flex items-center justify-between">
                 <CardTitle>{demo.title}</CardTitle>
                 <Badge className={DEMO_STATUS_COLORS[demo.status]}>{demo.status}</Badge>
               </div>
               <CardDescription>{demo.description}</CardDescription>
-              <p className="mt-4 text-sm text-sky-300">
+              <p className="mt-4 text-sm text-zinc-300">
                 Open demo <ArrowRight className="ml-1 inline h-4 w-4" />
               </p>
             </Card>

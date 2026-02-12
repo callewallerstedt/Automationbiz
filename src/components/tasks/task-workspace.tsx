@@ -67,7 +67,7 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
     }
     if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
       return (
-        <code key={key} className="rounded bg-zinc-800 px-1 py-0.5 text-[12px] text-emerald-200">
+        <code key={key} className="rounded bg-white/12 px-1 py-0.5 text-[12px] text-zinc-100">
           {part.slice(1, -1)}
         </code>
       );
@@ -104,7 +104,7 @@ function renderNotesPreview(text: string) {
       }
       if (i < lines.length) i += 1;
       nodes.push(
-        <pre key={`code-${i}`} className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950 p-3 text-xs text-emerald-200">
+        <pre key={`code-${i}`} className="frost-pane-soft overflow-x-auto rounded-lg p-3 text-xs text-zinc-100">
           <code>{codeLines.join("\n")}</code>
         </pre>,
       );
@@ -123,7 +123,7 @@ function renderNotesPreview(text: string) {
 
     if (trimmed.startsWith("> ")) {
       nodes.push(
-        <blockquote key={`q-${i}`} className="border-l-2 border-zinc-600 pl-3 text-sm italic text-zinc-300">
+        <blockquote key={`q-${i}`} className="frost-pane-soft rounded-lg px-3 py-2 text-sm italic text-zinc-300">
           {renderInline(trimmed.slice(2), `q-${i}`)}
         </blockquote>,
       );
@@ -476,16 +476,16 @@ export function TaskWorkspace({
       </div>
 
       <aside className="space-y-5 xl:sticky xl:top-20 xl:self-start">
-        <Card className="space-y-3 border-cyan-500/25 bg-gradient-to-b from-cyan-500/10 via-zinc-900/80 to-zinc-900/80 shadow-[0_0_40px_rgba(56,189,248,0.08)] xl:flex xl:h-[calc(100vh-7rem)] xl:flex-col">
+        <Card className="frost-pane-strong space-y-3 shadow-[0_0_44px_rgba(0,0,0,0.35)] xl:flex xl:h-[calc(100vh-7rem)] xl:flex-col">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-cyan-300" />
+              <Sparkles className="h-4 w-4 text-zinc-200" />
               <CardTitle>AI Chat</CardTitle>
             </div>
             <Button
               size="sm"
               variant="outline"
-              className="border-cyan-500/40 bg-cyan-500/10 text-cyan-100 hover:bg-cyan-500/20"
+              className="frost-pane-soft text-zinc-100 hover:bg-white/16"
               onClick={() => setChat([])}
             >
               <Plus className="mr-1 h-3.5 w-3.5" />
@@ -500,8 +500,8 @@ export function TaskWorkspace({
                   <div
                     className={
                       message.role === "user"
-                        ? "ml-auto inline-block max-w-[95%] rounded-xl bg-sky-500/20 px-3 py-2 text-left text-xs text-sky-100"
-                        : "inline-block max-w-[95%] rounded-xl border border-cyan-500/20 bg-zinc-900/90 px-3 py-2 text-left text-xs text-zinc-200"
+                        ? "frost-pane-strong ml-auto inline-block max-w-[95%] rounded-xl px-3 py-2 text-left text-xs text-zinc-100"
+                        : "frost-pane inline-block max-w-[95%] rounded-xl px-3 py-2 text-left text-xs text-zinc-200"
                     }
                   >
                     <div className={message.role === "assistant" ? "prose prose-invert prose-p:my-1 prose-li:my-0 max-w-none text-xs" : "text-xs"}>
@@ -525,7 +525,7 @@ export function TaskWorkspace({
             autoCapitalize="none"
           />
 
-          <Button onClick={runAi} disabled={working} className="bg-gradient-to-r from-cyan-500 to-sky-500 text-white hover:from-cyan-400 hover:to-sky-400">
+          <Button onClick={runAi} disabled={working} className="frost-pane-strong text-white hover:bg-white/20">
             {working ? "Thinking..." : "Send"}
           </Button>
         </Card>

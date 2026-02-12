@@ -52,10 +52,10 @@ type TaskMenuProps = {
 function ModalShell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/60 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="mx-auto mt-20 max-w-xl rounded-2xl border border-zinc-800 bg-zinc-950 p-4" onClick={(event) => event.stopPropagation()}>
+      <div className="frost-pane mx-auto mt-20 max-w-xl rounded-2xl p-4" onClick={(event) => event.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-zinc-100">{title}</h3>
-          <button type="button" className="rounded-lg p-1 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100" onClick={onClose}>
+          <button type="button" className="rounded-lg p-1 text-zinc-400 hover:bg-white/10 hover:text-zinc-100" onClick={onClose}>
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -70,16 +70,16 @@ function TaskMenu({ task, onRename, onEdit, onDelete }: TaskMenuProps) {
     <details className="group relative">
       <summary
         onPointerDown={(event) => event.stopPropagation()}
-        className="flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+        className="flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded-lg text-zinc-400 hover:bg-white/10 hover:text-zinc-100"
       >
         <MoreHorizontal className="h-4 w-4" />
       </summary>
-      <div className="absolute right-0 top-9 z-30 w-40 rounded-xl border border-zinc-800 bg-zinc-950 p-1.5 shadow-xl">
+      <div className="frost-pane absolute right-0 top-9 z-30 w-40 rounded-xl p-1.5 shadow-xl">
         <button
           type="button"
           onPointerDown={(event) => event.stopPropagation()}
           onClick={() => onRename(task)}
-          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-zinc-200 hover:bg-zinc-900"
+          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-zinc-200 hover:bg-white/10"
         >
           <Pencil className="h-3.5 w-3.5" />
           Rename
@@ -88,7 +88,7 @@ function TaskMenu({ task, onRename, onEdit, onDelete }: TaskMenuProps) {
           type="button"
           onPointerDown={(event) => event.stopPropagation()}
           onClick={() => onEdit(task)}
-          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-zinc-200 hover:bg-zinc-900"
+          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-zinc-200 hover:bg-white/10"
         >
           <Pencil className="h-3.5 w-3.5" />
           Edit
@@ -97,7 +97,7 @@ function TaskMenu({ task, onRename, onEdit, onDelete }: TaskMenuProps) {
           type="button"
           onPointerDown={(event) => event.stopPropagation()}
           onClick={() => onDelete(task)}
-          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-rose-300 hover:bg-zinc-900"
+          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-zinc-200 hover:bg-white/10"
         >
           <Trash2 className="h-3.5 w-3.5" />
           Delete
@@ -141,7 +141,7 @@ function TaskCard({
       </div>
 
       <div className="mb-2 flex items-center justify-between gap-2">
-        <Link href={`/tasks/${task.id}`} className="text-sm font-semibold text-zinc-100 hover:text-sky-300">
+        <Link href={`/tasks/${task.id}`} className="text-sm font-semibold text-zinc-100 hover:text-white">
           {task.title}
         </Link>
         <Badge className={PRIORITY_COLORS[task.priority]}>{task.priority}</Badge>
@@ -192,8 +192,8 @@ function TaskColumn({ status, children }: { status: TaskStatus; children: React.
     <div
       ref={setNodeRef}
       className={cn(
-        "min-h-80 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-3 transition duration-200",
-        isOver && "border-sky-400/60 bg-sky-500/10",
+        "frost-pane min-h-80 rounded-2xl p-3 transition duration-200",
+        isOver && "bg-white/16",
       )}
     >
       <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-400">{TASK_STATUS_LABELS[status]}</p>
@@ -439,7 +439,7 @@ export function TasksBoard({
       ) : (
         <Card className="overflow-visible p-0">
           <table className="w-full text-left text-sm">
-            <thead className="bg-zinc-900/80 text-zinc-400">
+            <thead className="frost-pane-soft text-zinc-400">
               <tr>
                 <th className="px-4 py-3">Task</th>
                 <th className="px-4 py-3">Description</th>
@@ -452,9 +452,9 @@ export function TasksBoard({
             </thead>
             <tbody>
               {tasks.map((task) => (
-                <tr key={task.id} className="border-t border-zinc-800 text-zinc-200">
+                <tr key={task.id} className="text-zinc-200">
                   <td className="px-4 py-3">
-                    <Link href={`/tasks/${task.id}`} className="hover:text-sky-300">
+                    <Link href={`/tasks/${task.id}`} className="hover:text-white">
                       {task.title}
                     </Link>
                   </td>

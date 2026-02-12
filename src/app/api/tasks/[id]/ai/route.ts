@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { getBusinessModelPromptContext } from "@/lib/business-model";
 import { openAiModel, openai } from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 
@@ -21,6 +22,22 @@ type ParsedAiOutput = {
   action?: "none" | "replace_notes";
   updatedNotes?: string;
 };
+
+function hasEditIntent(instruction: string) {
+  const text = instruction.trim();
+  if (!text) return false;
+
+  if (/^\/(apply|edit|rewrite|update|replace|insert|append|prepend|write)\b/i.test(text)) {
+    return true;
+  }
+
+  const directEditVerb =
+    /\b(edit|rewrite|reword|update|replace|change|fix|improve|shorten|expand|append|prepend|insert|remove|delete|clean up|polish|refactor|draft|write)\b/i;
+  const targetHint =
+    /\b(notes?|paragraph|section|line|bullet|intro|introduction|summary|todo|action items?|part|text|this)\b/i;
+
+  return directEditVerb.test(text) && targetHint.test(text);
+}
 
 function parseJsonOutput(raw: string) {
   const trimmed = raw.trim();
@@ -68,6 +85,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     .slice(-20)
     .map((message) => `${message.role === "assistant" ? "Assistant" : "User"}: ${message.text}`)
     .join("\n");
+  const businessModelContext = await getBusinessModelPromptContext();
 
   const response = await openai.responses.create({
     model: openAiModel,
@@ -79,7 +97,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           {
             type: "input_text",
             text:
-              "You are a precise task-note coworker. Edit notes exactly according to user instruction. Keep useful details. Behave as a normal chat assistant by default. Do not edit notes unless user explicitly asks to apply/update/rewrite notes, or uses a clear command like '/apply'. Return only JSON with keys assistantMessageMarkdown, action, updatedNotes. action must be 'none' or 'replace_notes'.",
+              "You are a precise task-note coworker. Behave as a normal chat assistant unless user asks to change the notes. When user asks to edit, rewrite, append, remove, or draft content, set action='replace_notes' and return full updatedNotes with only requested changes while preserving untouched content. Return only JSON with keys assistantMessageMarkdown, action, updatedNotes. action must be 'none' or 'replace_notes'.",
           },
         ],
       },
@@ -95,6 +113,9 @@ Company: ${task.company?.name ?? ""}
 Project: ${task.project?.name ?? ""}
 Assignee: ${task.assignee.name}
 
+Business model context:
+${businessModelContext}
+
 Current notes:
 ${payload.data.notes}
 
@@ -106,8 +127,9 @@ ${payload.data.instruction}
 
 Output rules:
 - Respond in markdown for assistantMessageMarkdown.
-- If user did not explicitly request note update, set action to "none" and do not include updatedNotes.
-- If user explicitly requested note update, set action to "replace_notes" and include full updatedNotes text.
+- If user did not request note changes, set action to "none" and do not include updatedNotes.
+- If user requested note changes (even if they did not say the word "notes"), set action to "replace_notes" and include full updatedNotes text.
+- For targeted edits, keep all untouched note content exactly as-is.
 - Return valid JSON only.`,
           },
         ],
@@ -125,9 +147,7 @@ Output rules:
     });
   }
 
-  const explicitApplyRequest = /\b(apply|update|rewrite|edit|replace)\b[\s\S]{0,40}\b(note|notes)\b/i.test(
-    payload.data.instruction,
-  ) || /^\/apply\b/i.test(payload.data.instruction.trim());
+  const explicitApplyRequest = hasEditIntent(payload.data.instruction);
   const action =
     explicitApplyRequest && parsed.action === "replace_notes" && typeof parsed.updatedNotes === "string"
       ? "replace_notes"
