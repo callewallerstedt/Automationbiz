@@ -31,7 +31,8 @@ npm run dev
 2. Import the repo in Vercel.
 3. Create a hosted PostgreSQL database (Vercel Postgres, Neon, Supabase, Railway, etc).
 4. In Vercel Project Settings -> Environment Variables, set:
-   - `DATABASE_URL` (production Postgres URL)
+   - `DATABASE_URL` (production Postgres URL), or use Vercel Postgres integration vars
+     (`POSTGRES_URL` / `POSTGRES_URL_NON_POOLING`)
    - `DIRECT_URL` (optional, non-pooled URL if you later wire Prisma direct migrations)
    - `OPENAI_API_KEY`
    - `OPENAI_MODEL` (optional, default is `gpt-5.2`)
@@ -41,6 +42,7 @@ npm run dev
    - `NEXT_PUBLIC_APP_URL` (your Vercel production URL)
 5. Deploy once from Vercel.
    - `vercel.json` uses `npm run vercel-build`, which runs `prisma migrate deploy` during build.
+   - Build script automatically prefers `POSTGRES_URL_NON_POOLING`, then `POSTGRES_URL`, then `DATABASE_URL`.
 6. (Optional) Seed production data once:
 
 ```bash
